@@ -23,7 +23,8 @@ void printer(const int a,const bool b)
 	std::cout << a << std::boolalpha << b << " || ";
 }
 
-
+template<class T>
+int rb_tree<T>::lp_rbtree = 0;
 
 int main()
 {
@@ -31,13 +32,16 @@ int main()
 	srand(NULL);
 
 	rb_tree<int> moje;
-	for (short i = 0; i < 600; i++)
+
+	for (int i = 0; i < 10000000; i++)
 	{
 		moje.add(rand()%10000,cmp2<int>);
+		//if(i % 10 == 0) moje.draw_graf();
 	}
 
-	moje.pre_order_traverse(printer);
-	moje.draw_graf();
+	moje.pre_order_traverse(printer,2);
+	std::cout << moje.get_height();
+	//moje.draw_graf();
 	/*try {
 		std::cout << moje.find_value(52,cmp1<int>) << std::endl;
 	}

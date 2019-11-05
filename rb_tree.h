@@ -4,6 +4,10 @@
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
+#include <conio.h> 
+#include <process.h> 
+#include <direct.h>
+
 
 
 template<class T>
@@ -12,6 +16,8 @@ class rb_tree
 	node<T>* root;
 	long size;
 	char lp[4];
+	
+	int lp_draws;
 
 	node<T>* search_position_and_add(T val, bool (*fun)(const T, const T))
 	{
@@ -49,7 +55,7 @@ class rb_tree
 		if (lp[2] == 'Z') { lp[3]++; lp[2] = 'A'; }
 	}
 
-	long fall_in_tree(node<T>* tmp)
+	int fall_in_tree(node<T>* tmp)
 	{
 		if (!tmp)
 		{
@@ -57,8 +63,8 @@ class rb_tree
 		}
 		else
 		{
-			long ll = fall_in_tree(tmp->child_left);
-			long rr = fall_in_tree(tmp->child_right);
+			int ll = fall_in_tree(tmp->child_left);
+			int rr = fall_in_tree(tmp->child_right);
 			if (rr < ll) return(ll + 1);
 			else return(rr + 1);
 		}
@@ -139,12 +145,14 @@ class rb_tree
 		}
 		else if (tmp2 == tmp2->parent->child_right && tmp2->parent == tmp3->child_left) // lewa storna lamana
 		{
+			node<T>* scroll = tmp2->child_left;
 			tmp2->child_left = tmp3->child_left;
 			tmp3->child_left = tmp2;
 			tmp2->child_left->parent = tmp2;
 			tmp2->parent = tmp3;
 			tmp2 = tmp2->child_left;
-			tmp2->child_right = NULL;
+			tmp2->child_right = scroll;
+			if (scroll) scroll->parent = tmp2;
 			// ........
 			if (tmp3->parent)
 			{
@@ -186,12 +194,14 @@ class rb_tree
 		}
 		else // prawa strona lamana
 		{
+			node<T>* scroll = tmp2->child_right;
 			tmp2->child_right = tmp3->child_right;
 			tmp3->child_right = tmp2;
 			tmp2->child_right->parent = tmp2;
 			tmp2->parent = tmp3;
 			tmp2 = tmp2->child_right;
-			tmp2->child_left = NULL;
+			tmp2->child_left = scroll;
+			if (scroll) scroll->parent = tmp2;
 			// ...........
 			if (tmp3->parent)
 			{
@@ -232,13 +242,15 @@ class rb_tree
 	}
 
 public:
-	rb_tree() :root(NULL), size(0) { lp[0] = 'A'; lp[1] = 'A'; lp[2] = 'A'; lp[3] = 'A';
+	rb_tree() :root(NULL), size(0),lp_draws(0)
+	{ 
+		lp[0] = 'A'; lp[1] = 'A'; lp[2] = 'A'; lp[3] = 'A';
 	};
 	rb_tree(T val) :rb_tree()
 	{
-		lp[0] = 'A'; lp[1] = 'A'; lp[2] = 'A'; lp[3] = 'A';
 		add(val);
 	}
+	static int lp_rbtree;
 
 	bool add(T val,bool (*fun)(const T,const T))
 	{
@@ -346,10 +358,12 @@ public:
 	void draw_graf()
 	{
 		std::fstream points, lines, file_out;
-		std::string line = "";
-		points.open("points.txt", std::ios::out | std::ios::in | std::ios::trunc);
-		lines.open("lines.txt", std::ios::out | std::ios::in | std::ios::trunc);
-		file_out.open("file.dot", std::ios::out | std::ios::trunc);
+		std::string line = "", name_out;
+		_mkdir("C:\\Users\\GSzwa\\source\\repos\\labo_algo_3\\labo_algo_3\\graph_out");
+		name_out = "\"C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.exe\" -Tpng C:\\Users\\GSzwa\\source\\repos\\labo_algo_3\\labo_algo_3\\graph_out\\file.dot -o C:\\Users\\GSzwa\\source\\repos\\labo_algo_3\\labo_algo_3\\graph_out\\mojgraf_rbtree_" + std::to_string(lp_rbtree) + "_" + std::to_string(lp_draws) + ".png";
+		points.open("graph_out\\points.txt", std::ios::out | std::ios::in | std::ios::trunc);
+		lines.open("graph_out\\lines.txt", std::ios::out | std::ios::in | std::ios::trunc);
+		file_out.open("graph_out\\file.dot", std::ios::out | std::ios::trunc);
 		 
 		node<int>* tmp = this->root;
 
@@ -370,13 +384,14 @@ public:
 		}
 		points.close();
 		lines.close();
-		remove("points.txt");
-		remove("lines.txt");
+		remove("graph_out\\points.txt");
+		remove("graph_out\\lines.txt");
 		file_out << "}" << std::endl;
 		file_out.close();
-		system("\"C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.exe\" -Tpdf C:\\Users\\GSzwa\\source\\repos\\labo_algo_3\\labo_algo_3\\file.dot -o C:\\Users\\GSzwa\\source\\repos\\labo_algo_3\\labo_algo_3\\mojgraf.pdf");
+		system(name_out.c_str());
 		
-		remove("file.dot");
+		//remove("graph_out\\file.dot");
+		lp_draws++;
 	}
 
 	bool erase_ptr(void)
